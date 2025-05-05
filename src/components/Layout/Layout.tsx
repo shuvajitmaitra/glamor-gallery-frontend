@@ -6,8 +6,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div>
       <Navbar />
-      <Sidebar />
-      {children}
+      <div className="flex gap-2">
+        <Sidebar />
+        {children}
+      </div>
     </div>
   );
 }
