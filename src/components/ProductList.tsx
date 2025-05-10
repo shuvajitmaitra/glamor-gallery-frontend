@@ -1,31 +1,26 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { productService } from "../services/api";
-import {
-  Heart,
-  ShoppingCart,
-  Search,
-  X,
-  ChevronDown,
-  Filter,
-  Menu,
-  Send,
-  Phone,
-} from "lucide-react";
-import { useMainContext } from "../context/MainContext";
+import { Heart, ShoppingCart, Search, X, ChevronDown, Filter, Menu, Send, Phone } from "lucide-react";
+import ProductDetailsModal from "./ProductDetailsModal";
 
-interface Product {
+export interface Product {
+  askingPrice: number;
   _id: string;
+  productCode: string;
   available: boolean;
   availableSize: string[];
   productName: string;
   productImage: string[];
   buyPrice: number;
-  askingPrice: number;
   sellingPrice: number;
   stock: number;
   category: string;
   description: string;
+  subCategory: string;
+  addedBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface CartItem {
@@ -35,39 +30,28 @@ interface CartItem {
 }
 
 const ProductList: React.FC = () => {
-  const {
-    showMobileSearch,
-    setShowMobileSearch,
-    isCartDrawerOpen,
-    setIsCartDrawerOpen,
-    setIsFilterDrawerOpen,
-    isFilterDrawerOpen,
-    setIsSidebarOpen,
-    setCategoryFilter,
-    categoryFilter
-
-  } = useMainContext();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState("");
-  // const [showMobileSearch, setShowMobileSearch] = useState(false);
-  
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
-  const [sortBy, setSortBy] = useState<
-    "price-asc" | "price-desc" | "name" | "popularity"
-  >("name");
+  const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name" | "popularity">("name");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
 
   // Sidebar and drawer states
-  
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
   // Refs for drawer click handling
   const filterDrawerRef = useRef<HTMLDivElement>(null);
@@ -101,16 +85,10 @@ const ProductList: React.FC = () => {
 
     // Add click outside listener
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        filterDrawerRef.current &&
-        !filterDrawerRef.current.contains(event.target as Node)
-      ) {
+      if (filterDrawerRef.current && !filterDrawerRef.current.contains(event.target as Node)) {
         setIsFilterDrawerOpen(false);
       }
-      if (
-        cartDrawerRef.current &&
-        !cartDrawerRef.current.contains(event.target as Node)
-      ) {
+      if (cartDrawerRef.current && !cartDrawerRef.current.contains(event.target as Node)) {
         setIsCartDrawerOpen(false);
       }
     };
@@ -140,18 +118,13 @@ const ProductList: React.FC = () => {
     return products
       .filter(
         (product) =>
-          (product.productName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-            product.description
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())) &&
+          (product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
           (categoryFilter === "" || product.category === categoryFilter) &&
           product.sellingPrice >= priceRange.min &&
           product.sellingPrice <= priceRange.max &&
           (!inStockOnly || product.stock > 0) &&
-          (selectedSizes.length === 0 ||
-            selectedSizes.some((size) => product.availableSize.includes(size)))
+          (selectedSizes.length === 0 || selectedSizes.some((size) => product.availableSize.includes(size)))
       )
       .sort((a, b) => {
         switch (sortBy) {
@@ -166,21 +139,10 @@ const ProductList: React.FC = () => {
             return a.productName.localeCompare(b.productName);
         }
       });
-  }, [
-    products,
-    searchTerm,
-    categoryFilter,
-    priceRange,
-    sortBy,
-    selectedSizes,
-    inStockOnly,
-  ]);
+  }, [products, searchTerm, categoryFilter, priceRange, sortBy, selectedSizes, inStockOnly]);
 
   // Get unique categories
-  const categories = useMemo(
-    () => Array.from(new Set(products.map((p) => p.category))),
-    [products]
-  );
+  const categories = useMemo(() => Array.from(new Set(products.map((p) => p.category))), [products]);
 
   // Get unique sizes
   const allSizes = useMemo(() => {
@@ -193,9 +155,7 @@ const ProductList: React.FC = () => {
 
   // Toggle wishlist
   const toggleWishlist = (productId: string) => {
-    const newWishlist = wishlist.includes(productId)
-      ? wishlist.filter((id) => id !== productId)
-      : [...wishlist, productId];
+    const newWishlist = wishlist.includes(productId) ? wishlist.filter((id) => id !== productId) : [...wishlist, productId];
 
     setWishlist(newWishlist);
     localStorage.setItem("wishlist", JSON.stringify(newWishlist));
@@ -203,9 +163,7 @@ const ProductList: React.FC = () => {
 
   // Cart functions
   const addToCart = (productId: string) => {
-    const existingItemIndex = cartItems.findIndex(
-      (item) => item.productId === productId
-    );
+    const existingItemIndex = cartItems.findIndex((item) => item.productId === productId);
 
     if (existingItemIndex !== -1) {
       // If product is already in cart, increase quantity
@@ -225,9 +183,7 @@ const ProductList: React.FC = () => {
   };
 
   const removeFromCart = (productId: string) => {
-    const updatedCartItems = cartItems.filter(
-      (item) => item.productId !== productId
-    );
+    const updatedCartItems = cartItems.filter((item) => item.productId !== productId);
     setCartItems(updatedCartItems);
     localStorage.setItem("cart", JSON.stringify(updatedCartItems));
   };
@@ -235,18 +191,14 @@ const ProductList: React.FC = () => {
   const updateCartItemQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
-    const updatedCartItems = cartItems.map((item) =>
-      item.productId === productId ? { ...item, quantity: newQuantity } : item
-    );
+    const updatedCartItems = cartItems.map((item) => (item.productId === productId ? { ...item, quantity: newQuantity } : item));
 
     setCartItems(updatedCartItems);
     localStorage.setItem("cart", JSON.stringify(updatedCartItems));
   };
 
   const updateCartItemSize = (productId: string, size: string) => {
-    const updatedCartItems = cartItems.map((item) =>
-      item.productId === productId ? { ...item, size } : item
-    );
+    const updatedCartItems = cartItems.map((item) => (item.productId === productId ? { ...item, size } : item));
 
     setCartItems(updatedCartItems);
     localStorage.setItem("cart", JSON.stringify(updatedCartItems));
@@ -254,9 +206,7 @@ const ProductList: React.FC = () => {
 
   // Toggle size selection
   const toggleSizeSelection = (size: string) => {
-    setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
-    );
+    setSelectedSizes((prev) => (prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]));
   };
 
   // Reset all filters
@@ -275,9 +225,9 @@ const ProductList: React.FC = () => {
       .map((item) => {
         const product = products.find((p) => p._id === item.productId);
         return product
-          ? `${product.productName} (${item.quantity}x) - $${(
-              product.sellingPrice * item.quantity
-            ).toFixed(2)}${item.size ? ` - Size: ${item.size}` : ""}`
+          ? `${product.productName} (${item.quantity}x) - $${(product.sellingPrice * item.quantity).toFixed(2)}${
+              item.size ? ` - Size: ${item.size}` : ""
+            }`
           : "";
       })
       .filter(Boolean)
@@ -288,22 +238,14 @@ const ProductList: React.FC = () => {
       return total + (product ? product.sellingPrice * item.quantity : 0);
     }, 0);
 
-    const message = `My Order:\n${cartProductsDetails}\n\nTotal: $${totalAmount.toFixed(
-      2
-    )}`;
+    const message = `My Order:\n${cartProductsDetails}\n\nTotal: $${totalAmount.toFixed(2)}`;
 
     if (platform === "whatsapp") {
       // WhatsApp sharing URL - you'll need to replace with the actual phone number
-      window.open(
-        `https://wa.me/+8801949887896?text=${encodeURIComponent(message)}`,
-        "_blank"
-      );
+      window.open(`https://wa.me/+8801949887896?text=${encodeURIComponent(message)}`, "_blank");
     } else {
       // Messenger sharing URL - you'll need to replace with the actual Facebook page ID
-      window.open(
-        `https://m.me/iamshuvajit?ref=${encodeURIComponent(message)}`,
-        "_blank"
-      );
+      window.open(`https://m.me/iamshuvajit?ref=${encodeURIComponent(message)}`, "_blank");
     }
   };
 
@@ -337,6 +279,13 @@ const ProductList: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-50">
+      <ProductDetailsModal
+        isVisible={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(!isDetailsModalOpen);
+        }}
+        selectedProduct={selectedProduct}
+      />
       {/* Mobile Search Bar - Appears when showMobileSearch is true */}
       {showMobileSearch && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16 md:hidden">
@@ -352,10 +301,7 @@ const ProductList: React.FC = () => {
                   autoFocus
                 />
                 <Search className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
-                <button
-                  onClick={() => setShowMobileSearch(false)}
-                  className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                >
+                <button onClick={() => setShowMobileSearch(false)} className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -373,29 +319,20 @@ const ProductList: React.FC = () => {
                         <div className="flex items-center">
                           <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
                             <img
-                              src={
-                                product.productImage[0] ||
-                                "/placeholder-image.png"
-                              }
+                              src={product.productImage[0] || "/placeholder-image.png"}
                               alt={product.productName}
                               className="w-full h-full object-cover"
                             />
                           </div>
                           <div className="ml-3 flex-1">
-                            <div className="text-sm font-medium line-clamp-1">
-                              {product.productName}
-                            </div>
-                            <div className="text-sm text-primary-600">
-                              ${product.sellingPrice.toFixed(2)}
-                            </div>
+                            <div className="text-sm font-medium line-clamp-1">{product.productName}</div>
+                            <div className="text-sm text-primary-600">${product.sellingPrice.toFixed(2)}</div>
                           </div>
                         </div>
                       </Link>
                     ))}
                     {filteredProducts.length > 5 && (
-                      <div className="p-2 text-primary-500 text-sm text-center">
-                        View all {filteredProducts.length} results
-                      </div>
+                      <div className="p-2 text-primary-500 text-sm text-center">View all {filteredProducts.length} results</div>
                     )}
                   </div>
                 </div>
@@ -415,25 +352,18 @@ const ProductList: React.FC = () => {
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold">Filters</h2>
-            <button
-              onClick={() => setIsFilterDrawerOpen(false)}
-              className="p-1 rounded-full hover:bg-gray-100"
-            >
+            <button onClick={() => setIsFilterDrawerOpen(false)} className="p-1 rounded-full hover:bg-gray-100">
               <X className="w-6 h-6" />
             </button>
           </div>
 
           {/* Category Filter */}
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              Categories
-            </h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Categories</h3>
             <div className="space-y-2">
               <div
                 className={`cursor-pointer px-3 py-2 rounded-md ${
-                  categoryFilter === ""
-                    ? "bg-primary-100 text-primary-700"
-                    : "hover:bg-gray-100"
+                  categoryFilter === "" ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
                 }`}
                 onClick={() => setCategoryFilter("")}
               >
@@ -443,9 +373,7 @@ const ProductList: React.FC = () => {
                 <div
                   key={category}
                   className={`cursor-pointer px-3 py-2 rounded-md ${
-                    categoryFilter === category
-                      ? "bg-primary-100 text-primary-700"
-                      : "hover:bg-gray-100"
+                    categoryFilter === category ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
                   }`}
                   onClick={() => setCategoryFilter(category)}
                 >
@@ -467,9 +395,7 @@ const ProductList: React.FC = () => {
                 max="1000"
                 step="10"
                 value={priceRange.max}
-                onChange={(e) =>
-                  setPriceRange({ ...priceRange, max: Number(e.target.value) })
-                }
+                onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
                 className="w-full accent-primary-500"
               />
             </div>
@@ -499,16 +425,9 @@ const ProductList: React.FC = () => {
           {/* In Stock Only */}
           <div className="mb-6">
             <label className="inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={inStockOnly}
-                onChange={() => setInStockOnly(!inStockOnly)}
-                className="sr-only peer"
-              />
+              <input type="checkbox" checked={inStockOnly} onChange={() => setInStockOnly(!inStockOnly)} className="sr-only peer" />
               <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-              <span className="ms-3 text-sm font-medium text-gray-700">
-                In Stock Only
-              </span>
+              <span className="ms-3 text-sm font-medium text-gray-700">In Stock Only</span>
             </label>
           </div>
 
@@ -518,15 +437,7 @@ const ProductList: React.FC = () => {
             <div className="relative">
               <select
                 value={sortBy}
-                onChange={(e) =>
-                  setSortBy(
-                    e.target.value as
-                      | "price-asc"
-                      | "price-desc"
-                      | "name"
-                      | "popularity"
-                  )
-                }
+                onChange={(e) => setSortBy(e.target.value as "price-asc" | "price-desc" | "name" | "popularity")}
                 className="appearance-none w-full bg-gray-50 px-4 py-2 pr-8 rounded-lg border border-gray-300 focus:outline-none"
               >
                 <option value="name">Name</option>
@@ -558,10 +469,7 @@ const ProductList: React.FC = () => {
                 </span>
               )}
               {selectedSizes.map((size) => (
-                <span
-                  key={size}
-                  className="flex items-center gap-1 text-xs bg-gray-100 px-2 py-1 rounded-full"
-                >
+                <span key={size} className="flex items-center gap-1 text-xs bg-gray-100 px-2 py-1 rounded-full">
                   Size: {size}
                   <button onClick={() => toggleSizeSelection(size)}>
                     <X className="w-3 h-3" />
@@ -599,10 +507,7 @@ const ProductList: React.FC = () => {
           <div className="p-4 border-b">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-bold">Your Cart</h2>
-              <button
-                onClick={() => setIsCartDrawerOpen(false)}
-                className="p-1 rounded-full hover:bg-gray-100"
-              >
+              <button onClick={() => setIsCartDrawerOpen(false)} className="p-1 rounded-full hover:bg-gray-100">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -623,9 +528,7 @@ const ProductList: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {cartItems.map((item) => {
-                  const product = products.find(
-                    (p) => p._id === item.productId
-                  );
+                  const product = products.find((p) => p._id === item.productId);
 
                   if (!product) return null;
 
@@ -633,9 +536,7 @@ const ProductList: React.FC = () => {
                     <div key={item.productId} className="flex border-b pb-4">
                       <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0">
                         <img
-                          src={
-                            product.productImage[0] || "/placeholder-image.png"
-                          }
+                          src={product.productImage[0] || "/placeholder-image.png"}
                           alt={product.productName}
                           className="w-full h-full object-cover"
                         />
@@ -649,26 +550,19 @@ const ProductList: React.FC = () => {
                           >
                             {product.productName}
                           </Link>
-                          <button
-                            onClick={() => removeFromCart(product._id)}
-                            className="text-gray-400 hover:text-red-500"
-                          >
+                          <button onClick={() => removeFromCart(product._id)} className="text-gray-400 hover:text-red-500">
                             <X className="w-4 h-4" />
                           </button>
                         </div>
 
-                        <div className="text-sm text-primary-600 mt-1">
-                          ${product.sellingPrice.toFixed(2)}
-                        </div>
+                        <div className="text-sm text-primary-600 mt-1">${product.sellingPrice.toFixed(2)}</div>
 
                         {/* Size Selector */}
                         {product.availableSize.length > 0 && (
                           <div className="mt-2">
                             <select
                               value={item.size || ""}
-                              onChange={(e) =>
-                                updateCartItemSize(product._id, e.target.value)
-                              }
+                              onChange={(e) => updateCartItemSize(product._id, e.target.value)}
                               className="text-xs border rounded p-1 w-auto"
                             >
                               <option value="">Select Size</option>
@@ -684,12 +578,7 @@ const ProductList: React.FC = () => {
                         {/* Quantity */}
                         <div className="flex items-center mt-2">
                           <button
-                            onClick={() =>
-                              updateCartItemQuantity(
-                                product._id,
-                                item.quantity - 1
-                              )
-                            }
+                            onClick={() => updateCartItemQuantity(product._id, item.quantity - 1)}
                             className="w-6 h-6 flex items-center justify-center border rounded-full text-gray-500 hover:bg-gray-100"
                             disabled={item.quantity <= 1}
                           >
@@ -697,21 +586,14 @@ const ProductList: React.FC = () => {
                           </button>
                           <span className="mx-2 text-sm">{item.quantity}</span>
                           <button
-                            onClick={() =>
-                              updateCartItemQuantity(
-                                product._id,
-                                item.quantity + 1
-                              )
-                            }
+                            onClick={() => updateCartItemQuantity(product._id, item.quantity + 1)}
                             className="w-6 h-6 flex items-center justify-center border rounded-full text-gray-500 hover:bg-gray-100"
                             disabled={item.quantity >= product.stock}
                           >
                             +
                           </button>
 
-                          <div className="ml-auto text-sm font-medium">
-                            ${(product.sellingPrice * item.quantity).toFixed(2)}
-                          </div>
+                          <div className="ml-auto text-sm font-medium">${(product.sellingPrice * item.quantity).toFixed(2)}</div>
                         </div>
                       </div>
                     </div>
@@ -725,9 +607,7 @@ const ProductList: React.FC = () => {
             <div className="p-4 border-t">
               <div className="flex justify-between mb-4">
                 <span className="font-medium">Total:</span>
-                <span className="font-bold text-lg">
-                  ${cartTotal.toFixed(2)}
-                </span>
+                <span className="font-bold text-lg">${cartTotal.toFixed(2)}</span>
               </div>
 
               <div className="space-y-2">
@@ -754,8 +634,117 @@ const ProductList: React.FC = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-2 md:px-6 lg:px-8">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between py-2 mb-4">
+          <button onClick={() => setIsFilterDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm">
+            <Menu className="w-6 h-6" />
+          </button>
+
+          <h1 className="text-lg font-bold">Our Products</h1>
+
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setShowMobileSearch(true)} className="p-2 rounded-lg bg-white shadow-sm">
+              <Search className="w-6 h-6" />
+            </button>
+
+            <button onClick={() => setIsCartDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm relative">
+              <ShoppingCart className="w-6 h-6" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-white text-primary-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-primary-500">
+                  {cartItems.length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-6">
-         
+          {/* Desktop Sidebar */}
+          <div
+            className={`hidden md:block w-64 flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? "opacity-100" : "opacity-0 w-0"}`}
+          >
+            <div className="bg-white rounded-xl shadow-sm p-4 sticky top-4">
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Categories</h2>
+                <div className="space-y-2">
+                  <div
+                    className={`cursor-pointer px-3 py-2 rounded-md ${
+                      categoryFilter === "" ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
+                    }`}
+                    onClick={() => setCategoryFilter("")}
+                  >
+                    All Categories
+                  </div>
+                  {categories.map((category) => (
+                    <div
+                      key={category}
+                      className={`cursor-pointer px-3 py-2 rounded-md ${
+                        categoryFilter === category ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => setCategoryFilter(category)}
+                    >
+                      {category}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Price Range</h2>
+                <div className="px-2">
+                  <div className="flex justify-between mb-2 text-sm">
+                    <span>${priceRange.min}</span>
+                    <span>${priceRange.max}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1000"
+                    step="10"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
+                    className="w-full accent-primary-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Size</h2>
+                <div className="flex flex-wrap gap-2">
+                  {allSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => toggleSizeSelection(size)}
+                      className={`px-3 py-1 text-sm rounded-full border 
+                        ${
+                          selectedSizes.includes(size)
+                            ? "bg-primary-500 text-white border-primary-500"
+                            : "bg-white text-gray-700 border-gray-300 hover:border-primary-500"
+                        }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Options</h2>
+                <label className="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" checked={inStockOnly} onChange={() => setInStockOnly(!inStockOnly)} className="sr-only peer" />
+                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                  <span className="ms-3 text-sm font-medium text-gray-700">In Stock Only</span>
+                </label>
+              </div>
+
+              <button
+                onClick={resetFilters}
+                className="w-full py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+              >
+                Reset Filters
+              </button>
+            </div>
+          </div>
 
           {/* Main Content Area */}
           <div className="flex-1">
@@ -774,41 +763,31 @@ const ProductList: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade-in">
                 {filteredProducts.map((product) => (
                   <div
+                    onClick={() => {
+                      setIsDetailsModalOpen(!isDetailsModalOpen);
+                      setSelectedProduct(product);
+                    }}
                     key={product._id}
                     className="bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg"
                   >
                     <div className="relative">
-                      <Link to={`/products/${product._id}`} className="block">
-                        <div className="aspect-w-3 aspect-h-4">
-                          <img
-                            src={
-                              product.productImage[0] ||
-                              "/placeholder-image.png"
-                            }
-                            alt={product.productName}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </Link>
+                      <div className="aspect-w-3 aspect-h-4">
+                        <img
+                          src={product.productImage[0] || "/placeholder-image.png"}
+                          alt={product.productName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
 
                       {/* Wishlist and Quick Add */}
                       <div className="absolute top-2 right-2 flex flex-col gap-2">
                         <button
                           onClick={() => toggleWishlist(product._id)}
                           className={`p-2 rounded-full ${
-                            wishlist.includes(product._id)
-                              ? "bg-primary-500 text-white"
-                              : "bg-white text-gray-700 shadow-md"
+                            wishlist.includes(product._id) ? "bg-primary-500 text-white" : "bg-white text-gray-700 shadow-md"
                           }`}
                         >
-                          <Heart
-                            className="w-4 h-4"
-                            fill={
-                              wishlist.includes(product._id)
-                                ? "currentColor"
-                                : "none"
-                            }
-                          />
+                          <Heart className="w-4 h-4" fill={wishlist.includes(product._id) ? "currentColor" : "none"} />
                         </button>
 
                         {product.stock > 0 && (
@@ -823,54 +802,33 @@ const ProductList: React.FC = () => {
 
                       {/* Badges */}
                       <div className="absolute top-2 left-2 flex flex-col gap-1">
-                        {product.stock === 0 && (
-                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            Out of Stock
-                          </span>
-                        )}
+                        {product.stock === 0 && <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Out of Stock</span>}
                         {product.sellingPrice < product.askingPrice && (
-                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                            Sale
-                          </span>
+                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">Sale</span>
                         )}
                       </div>
                     </div>
 
                     <div className="p-4">
-                      <div className="text-xs text-gray-500 mb-1">
-                        {product.category}
-                      </div>
-                      <Link to={`/products/${product._id}`}>
-                        <h2 className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-500 transition-colors">
-                          {product.productName}
-                        </h2>
-                      </Link>
+                      <div className="text-xs text-gray-500 mb-1">{product.category}</div>
+                      <h2 className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-500 transition-colors">
+                        {product.productName}
+                      </h2>
 
                       <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-primary-600 font-bold text-sm md:text-base">
-                          ${product.sellingPrice.toFixed(2)}
-                        </span>
+                        <span className="text-primary-600 font-bold text-sm md:text-base">${product.sellingPrice.toFixed(2)}</span>
                         {product.sellingPrice < product.askingPrice && (
-                          <span className="text-gray-400 text-xs line-through">
-                            ${product.askingPrice.toFixed(2)}
-                          </span>
+                          <span className="text-gray-400 text-xs line-through">${product.askingPrice.toFixed(2)}</span>
                         )}
                       </div>
 
-                      {product.stock > 0 && (
-                        <div className="mt-2 text-xs text-gray-500">
-                          {product.stock} in stock
-                        </div>
-                      )}
+                      {product.stock > 0 && <div className="mt-2 text-xs text-gray-500">{product.stock} in stock</div>}
 
                       {/* Available sizes */}
                       {product.availableSize.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {product.availableSize.slice(0, 3).map((size) => (
-                            <span
-                              key={size}
-                              className="text-xs px-2 py-0.5 border border-gray-200 rounded-full"
-                            >
+                            <span key={size} className="text-xs px-2 py-0.5 border border-gray-200 rounded-full">
                               {size}
                             </span>
                           ))}
@@ -894,32 +852,20 @@ const ProductList: React.FC = () => {
                     className="bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg p-4"
                   >
                     <div className="flex flex-col sm:flex-row">
-                      <Link
-                        to={`/products/${product._id}`}
-                        className="block sm:w-1/4 max-w-xs mr-6"
-                      >
-                        <div className="aspect-w-1 aspect-h-1 sm:aspect-w-3 sm:aspect-h-4 rounded-lg overflow-hidden">
-                          <img
-                            src={
-                              product.productImage[0] ||
-                              "/placeholder-image.png"
-                            }
-                            alt={product.productName}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </Link>
+                      <div className="aspect-w-1 aspect-h-1 sm:aspect-w-3 sm:aspect-h-4 rounded-lg overflow-hidden">
+                        <img
+                          src={product.productImage[0] || "/placeholder-image.png"}
+                          alt={product.productName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
 
                       <div className="flex-1 mt-4 sm:mt-0">
                         <div className="flex justify-between">
                           <div>
-                            <div className="text-sm text-gray-500 mb-1">
-                              {product.category}
-                            </div>
+                            <div className="text-sm text-gray-500 mb-1">{product.category}</div>
                             <Link to={`/products/${product._id}`}>
-                              <h2 className="text-lg font-semibold hover:text-primary-500 transition-colors">
-                                {product.productName}
-                              </h2>
+                              <h2 className="text-lg font-semibold hover:text-primary-500 transition-colors">{product.productName}</h2>
                             </Link>
                           </div>
 
@@ -927,19 +873,10 @@ const ProductList: React.FC = () => {
                             <button
                               onClick={() => toggleWishlist(product._id)}
                               className={`p-2 rounded-full ${
-                                wishlist.includes(product._id)
-                                  ? "bg-primary-100 text-primary-500"
-                                  : "bg-gray-100 text-gray-700"
+                                wishlist.includes(product._id) ? "bg-primary-100 text-primary-500" : "bg-gray-100 text-gray-700"
                               }`}
                             >
-                              <Heart
-                                className="w-5 h-5"
-                                fill={
-                                  wishlist.includes(product._id)
-                                    ? "currentColor"
-                                    : "none"
-                                }
-                              />
+                              <Heart className="w-5 h-5" fill={wishlist.includes(product._id) ? "currentColor" : "none"} />
                             </button>
 
                             {product.stock > 0 && (
@@ -954,19 +891,13 @@ const ProductList: React.FC = () => {
                           </div>
                         </div>
 
-                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                          {product.description}
-                        </p>
+                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{product.description}</p>
 
                         <div className="mt-4 flex flex-wrap items-center gap-4">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-primary-600 font-bold text-lg">
-                              ${product.sellingPrice.toFixed(2)}
-                            </span>
+                            <span className="text-primary-600 font-bold text-lg">${product.sellingPrice.toFixed(2)}</span>
                             {product.sellingPrice < product.askingPrice && (
-                              <span className="text-gray-400 text-sm line-through">
-                                ${product.askingPrice.toFixed(2)}
-                              </span>
+                              <span className="text-gray-400 text-sm line-through">${product.askingPrice.toFixed(2)}</span>
                             )}
                           </div>
 
@@ -974,31 +905,20 @@ const ProductList: React.FC = () => {
                             <span
                               className={`
                                 text-xs px-2 py-1 rounded-full
-                                ${
-                                  product.stock > 0
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                                }
+                                ${product.stock > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}
                               `}
                             >
-                              {product.stock > 0
-                                ? `${product.stock} in stock`
-                                : "Out of Stock"}
+                              {product.stock > 0 ? `${product.stock} in stock` : "Out of Stock"}
                             </span>
                           </div>
 
                           {/* Available sizes */}
                           {product.availableSize.length > 0 && (
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">
-                                Sizes:
-                              </span>
+                              <span className="text-xs text-gray-500">Sizes:</span>
                               <div className="flex flex-wrap gap-1">
                                 {product.availableSize.map((size) => (
-                                  <span
-                                    key={size}
-                                    className="text-xs px-2 py-0.5 border border-gray-200 rounded-full"
-                                  >
+                                  <span key={size} className="text-xs px-2 py-0.5 border border-gray-200 rounded-full">
                                     {size}
                                   </span>
                                 ))}
@@ -1017,21 +937,11 @@ const ProductList: React.FC = () => {
             {filteredProducts.length > 0 && (
               <div className="mt-8 flex justify-center">
                 <nav className="flex items-center space-x-2">
-                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">
-                    Previous
-                  </button>
-                  <button className="px-3 py-1 rounded-md bg-primary-500 text-white">
-                    1
-                  </button>
-                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">
-                    2
-                  </button>
-                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">
-                    3
-                  </button>
-                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">
-                    Next
-                  </button>
+                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">Previous</button>
+                  <button className="px-3 py-1 rounded-md bg-primary-500 text-white">1</button>
+                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">2</button>
+                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">3</button>
+                  <button className="px-3 py-1 rounded-md bg-gray-100 text-gray-700">Next</button>
                 </nav>
               </div>
             )}
