@@ -241,11 +241,11 @@ const ProductList: React.FC = () => {
     const message = `My Order:\n${cartProductsDetails}\n\nTotal: $${totalAmount.toFixed(2)}`;
 
     if (platform === "whatsapp") {
-      // WhatsApp sharing URL - you'll need to replace with the actual phone number
-      window.open(`https://wa.me/+8801949887896?text=${encodeURIComponent(message)}`, "_blank");
+      // WhatsApp sharing URL - phone number should be valid
+      window.open(`https://wa.me/+8801982443299?text=${encodeURIComponent(message)}`, "_blank");
     } else {
-      // Messenger sharing URL - you'll need to replace with the actual Facebook page ID
-      window.open(`https://m.me/iamshuvajit?ref=${encodeURIComponent(message)}`, "_blank");
+      // Messenger sharing URL - use a valid Facebook Page ID or User ID
+      window.open(`https://www.messenger.com/t/481950948332658?text=${encodeURIComponent(message)}`, "_blank");
     }
   };
 

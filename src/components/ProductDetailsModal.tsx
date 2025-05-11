@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { Phone, Send, X } from "lucide-react";
 
 // Define TypeScript interface for the product
 interface Product {
@@ -72,6 +72,18 @@ export default function ProductDetailsModal({ isVisible, onClose, selectedProduc
 
   if (!isVisible || !selectedProduct) return null;
 
+  const shareCartVia = (platform: "whatsapp" | "messenger") => {
+    const message = `My Order:\n${selectedProduct.productName}\n\nProductCode:${selectedProduct.productCode}\n\nTotal: $${selectedProduct.sellingPrice}`;
+
+    if (platform === "whatsapp") {
+      // WhatsApp sharing URL - phone number should be valid
+      window.open(`https://wa.me/+8801982443299?text=${encodeURIComponent(message)}`, "_blank");
+    } else {
+      // Messenger sharing URL - use a valid Facebook Page ID or User ID
+      window.open(`https://www.messenger.com/t/481950948332658?text=${encodeURIComponent(message)}`, "_blank");
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center"
@@ -139,6 +151,23 @@ export default function ProductDetailsModal({ isVisible, onClose, selectedProduc
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800">Description</h3>
                 <p className="text-gray-600 text-sm sm:text-base whitespace-pre-line">{selectedProduct.description}</p>
               </div>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => shareCartVia("whatsapp")}
+                className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <Phone className="w-5 h-5" />
+                Order via WhatsApp
+              </button>
+
+              <button
+                onClick={() => shareCartVia("messenger")}
+                className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <Send className="w-5 h-5" />
+                Order via Messenger
+              </button>
             </div>
           </div>
         </div>
