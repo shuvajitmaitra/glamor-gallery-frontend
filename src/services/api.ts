@@ -19,7 +19,6 @@ export const productService = {
   getAllProducts: async () => {
     try {
       const response = await api.get("/product/products");
-      console.log("response.data", JSON.stringify(response.data, null, 2));
       return response.data;
     } catch (error) {
       throw error;
