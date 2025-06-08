@@ -2,11 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { productService } from "../services/api";
 import { Heart, ShoppingCart, Search, X, ChevronDown, Filter, Menu, Send, Phone } from "lucide-react";
-<<<<<<< HEAD
 import { useMainContext } from "../context/MainContext";
-=======
 import ProductDetailsModal from "./ProductDetailsModal";
->>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
 
 export interface Product {
   askingPrice: number;
@@ -34,7 +31,6 @@ interface CartItem {
 }
 
 const ProductList: React.FC = () => {
-<<<<<<< HEAD
   const {
     showMobileSearch,
     setShowMobileSearch,
@@ -47,9 +43,6 @@ const ProductList: React.FC = () => {
     categoryFilter,
     products,
   } = useMainContext();
-=======
-  const [products, setProducts] = useState<Product[]>([]);
->>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -60,27 +53,18 @@ const ProductList: React.FC = () => {
   console.log("products", JSON.stringify(products, null, 2));
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState("");
-<<<<<<< HEAD
-  // const [showMobileSearch, setShowMobileSearch] = useState(false);
-
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 5000 });
-=======
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
->>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name" | "popularity">("name");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
 
   // Sidebar and drawer states
-<<<<<<< HEAD
-=======
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
->>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
 
   // Refs for drawer click handling
   const filterDrawerRef = useRef<HTMLDivElement>(null);
@@ -270,19 +254,11 @@ const ProductList: React.FC = () => {
     const message = `My Order:\n${cartProductsDetails}\n\nTotal: $${totalAmount.toFixed(2)}`;
 
     if (platform === "whatsapp") {
-<<<<<<< HEAD
-      // WhatsApp sharing URL - you'll need to replace with the actual phone number
-      window.open(`https://wa.me/+8801949887896?text=${encodeURIComponent(message)}`, "_blank");
-    } else {
-      // Messenger sharing URL - you'll need to replace with the actual Facebook page ID
-      window.open(`https://m.me/iamshuvajit?ref=${encodeURIComponent(message)}`, "_blank");
-=======
       // WhatsApp sharing URL - phone number should be valid
       window.open(`https://wa.me/+8801982443299?text=${encodeURIComponent(message)}`, "_blank");
     } else {
       // Messenger sharing URL - use a valid Facebook Page ID or User ID
       window.open(`https://www.messenger.com/t/481950948332658?text=${encodeURIComponent(message)}`, "_blank");
->>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
     }
   };
 
