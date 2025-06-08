@@ -2,20 +2,29 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { productService } from "../services/api";
 import { Heart, ShoppingCart, Search, X, ChevronDown, Filter, Menu, Send, Phone } from "lucide-react";
+<<<<<<< HEAD
 import { useMainContext } from "../context/MainContext";
+=======
+import ProductDetailsModal from "./ProductDetailsModal";
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
 
-interface Product {
+export interface Product {
+  askingPrice: number;
   _id: string;
+  productCode: string;
   available: boolean;
   availableSize: string[];
   productName: string;
   productImage: string[];
   buyPrice: number;
-  askingPrice: number;
   sellingPrice: number;
   stock: number;
   category: string;
   description: string;
+  subCategory: string;
+  addedBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface CartItem {
@@ -25,6 +34,7 @@ interface CartItem {
 }
 
 const ProductList: React.FC = () => {
+<<<<<<< HEAD
   const {
     showMobileSearch,
     setShowMobileSearch,
@@ -37,23 +47,40 @@ const ProductList: React.FC = () => {
     categoryFilter,
     products,
   } = useMainContext();
+=======
+  const [products, setProducts] = useState<Product[]>([]);
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   console.log("products", JSON.stringify(products, null, 2));
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState("");
+<<<<<<< HEAD
   // const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const [priceRange, setPriceRange] = useState({ min: 0, max: 5000 });
+=======
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name" | "popularity">("name");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
 
   // Sidebar and drawer states
+<<<<<<< HEAD
+=======
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
 
   // Refs for drawer click handling
   const filterDrawerRef = useRef<HTMLDivElement>(null);
@@ -243,11 +270,19 @@ const ProductList: React.FC = () => {
     const message = `My Order:\n${cartProductsDetails}\n\nTotal: $${totalAmount.toFixed(2)}`;
 
     if (platform === "whatsapp") {
+<<<<<<< HEAD
       // WhatsApp sharing URL - you'll need to replace with the actual phone number
       window.open(`https://wa.me/+8801949887896?text=${encodeURIComponent(message)}`, "_blank");
     } else {
       // Messenger sharing URL - you'll need to replace with the actual Facebook page ID
       window.open(`https://m.me/iamshuvajit?ref=${encodeURIComponent(message)}`, "_blank");
+=======
+      // WhatsApp sharing URL - phone number should be valid
+      window.open(`https://wa.me/+8801982443299?text=${encodeURIComponent(message)}`, "_blank");
+    } else {
+      // Messenger sharing URL - use a valid Facebook Page ID or User ID
+      window.open(`https://www.messenger.com/t/481950948332658?text=${encodeURIComponent(message)}`, "_blank");
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
     }
   };
 
@@ -281,6 +316,13 @@ const ProductList: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-50">
+      <ProductDetailsModal
+        isVisible={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(!isDetailsModalOpen);
+        }}
+        selectedProduct={selectedProduct}
+      />
       {/* Mobile Search Bar - Appears when showMobileSearch is true */}
       {showMobileSearch && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16 md:hidden">
@@ -629,7 +671,121 @@ const ProductList: React.FC = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-2 md:px-6 lg:px-8">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between py-2 mb-4">
+          <button onClick={() => setIsFilterDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm">
+            <Menu className="w-6 h-6" />
+          </button>
+
+          <h1 className="text-lg font-bold">Our Products</h1>
+
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setShowMobileSearch(true)} className="p-2 rounded-lg bg-white shadow-sm">
+              <Search className="w-6 h-6" />
+            </button>
+
+            <button onClick={() => setIsCartDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm relative">
+              <ShoppingCart className="w-6 h-6" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-white text-primary-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-primary-500">
+                  {cartItems.length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-6">
+<<<<<<< HEAD
+=======
+          {/* Desktop Sidebar */}
+          <div
+            className={`hidden md:block w-64 flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? "opacity-100" : "opacity-0 w-0"}`}
+          >
+            <div className="bg-white rounded-xl shadow-sm p-4 sticky top-4">
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Categories</h2>
+                <div className="space-y-2">
+                  <div
+                    className={`cursor-pointer px-3 py-2 rounded-md ${
+                      categoryFilter === "" ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
+                    }`}
+                    onClick={() => setCategoryFilter("")}
+                  >
+                    All Categories
+                  </div>
+                  {categories.map((category) => (
+                    <div
+                      key={category}
+                      className={`cursor-pointer px-3 py-2 rounded-md ${
+                        categoryFilter === category ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => setCategoryFilter(category)}
+                    >
+                      {category}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Price Range</h2>
+                <div className="px-2">
+                  <div className="flex justify-between mb-2 text-sm">
+                    <span>${priceRange.min}</span>
+                    <span>${priceRange.max}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1000"
+                    step="10"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
+                    className="w-full accent-primary-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Size</h2>
+                <div className="flex flex-wrap gap-2">
+                  {allSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => toggleSizeSelection(size)}
+                      className={`px-3 py-1 text-sm rounded-full border 
+                        ${
+                          selectedSizes.includes(size)
+                            ? "bg-primary-500 text-white border-primary-500"
+                            : "bg-white text-gray-700 border-gray-300 hover:border-primary-500"
+                        }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Options</h2>
+                <label className="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" checked={inStockOnly} onChange={() => setInStockOnly(!inStockOnly)} className="sr-only peer" />
+                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                  <span className="ms-3 text-sm font-medium text-gray-700">In Stock Only</span>
+                </label>
+              </div>
+
+              <button
+                onClick={resetFilters}
+                className="w-full py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+              >
+                Reset Filters
+              </button>
+            </div>
+          </div>
+
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
           {/* Main Content Area */}
           <div className="flex-1">
             {/* Products Grid/List */}
@@ -645,6 +801,7 @@ const ProductList: React.FC = () => {
               </div>
             ) : view === "grid" ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade-in">
+<<<<<<< HEAD
                 {products.map((product) => (
                   <div key={product._id} className="bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg">
                     <div className="relative">
@@ -657,6 +814,25 @@ const ProductList: React.FC = () => {
                           />
                         </div>
                       </Link>
+=======
+                {filteredProducts.map((product) => (
+                  <div
+                    onClick={() => {
+                      setIsDetailsModalOpen(!isDetailsModalOpen);
+                      setSelectedProduct(product);
+                    }}
+                    key={product._id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg"
+                  >
+                    <div className="relative">
+                      <div className="aspect-w-3 aspect-h-4">
+                        <img
+                          src={product.productImage[0] || "/placeholder-image.png"}
+                          alt={product.productName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
 
                       {/* Wishlist and Quick Add */}
                       <div className="absolute top-2 right-2 flex flex-col gap-2">
@@ -690,11 +866,17 @@ const ProductList: React.FC = () => {
 
                     <div className="p-4">
                       <div className="text-xs text-gray-500 mb-1">{product.category}</div>
+<<<<<<< HEAD
                       <Link to={`/products/${product._id}`}>
                         <h2 className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-500 transition-colors">
                           {product.productName}
                         </h2>
                       </Link>
+=======
+                      <h2 className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-500 transition-colors">
+                        {product.productName}
+                      </h2>
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
 
                       <div className="mt-2 flex items-baseline gap-2">
                         <span className="text-primary-600 font-bold text-sm md:text-base">${product.sellingPrice.toFixed(2)}</span>
@@ -733,6 +915,7 @@ const ProductList: React.FC = () => {
                     className="bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg p-4"
                   >
                     <div className="flex flex-col sm:flex-row">
+<<<<<<< HEAD
                       <Link to={`/products/${product._id}`} className="block sm:w-1/4 max-w-xs mr-6">
                         <div className="aspect-w-1 aspect-h-1 sm:aspect-w-3 sm:aspect-h-4 rounded-lg overflow-hidden">
                           <img
@@ -742,6 +925,15 @@ const ProductList: React.FC = () => {
                           />
                         </div>
                       </Link>
+=======
+                      <div className="aspect-w-1 aspect-h-1 sm:aspect-w-3 sm:aspect-h-4 rounded-lg overflow-hidden">
+                        <img
+                          src={product.productImage[0] || "/placeholder-image.png"}
+                          alt={product.productName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+>>>>>>> af00f7fe483da490c1561f74e2a02d1347bbc873
 
                       <div className="flex-1 mt-4 sm:mt-0">
                         <div className="flex justify-between">
