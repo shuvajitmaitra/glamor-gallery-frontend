@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar/Navbar";
 import { Heart } from "lucide-react";
 
 export default function HomePage() {
-  const { products, loading, currentPage, totalPages, setPage } = useMainContext();
+  const { products, loading, currentPage, totalPages, setPage, favoriteProducts } = useMainContext();
 
   if (loading && products.length === 0) {
     return (
@@ -44,7 +44,7 @@ export default function HomePage() {
                 </div>
                 <button
                   onClick={() => {}}
-                  className=" absolute bottom-2 right-2 p-2 shadow rounded-lg bg-red-50  hover:bg-gray-50 transition"
+                  className={`absolute bottom-2 right-2 p-2 shadow rounded-lg ${"bg-red-50"}  hover:bg-gray-50 transition`}
                 >
                   <Heart className="w-6 h-6" />
                 </button>

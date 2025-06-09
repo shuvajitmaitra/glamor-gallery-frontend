@@ -8,16 +8,32 @@ interface MainContextType {
   totalPages: number;
   setPage: (page: number) => void;
   categories: string[];
+  favoriteProducts: any[];
 }
 
 const MainContext = createContext<MainContextType | undefined>(undefined);
 
 export const MainProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<any[]>([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const categories = ["Men", "Women", "Children", "Accessories", "Beauty", "Winter"];
+
+  const loadFavoriteProducts = () => {
+    const savedCart = localStorage.getItem("cart");
+
+    let j = null;
+    if (savedCart) {
+      j = JSON.parse(savedCart);
+    }
+    j !== null && setFavoriteProducts(j);
+  };
+  useEffect(() => {
+    loadFavoriteProducts();
+  }, []);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -44,7 +60,9 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MainContext.Provider value={{ products, loading, currentPage, totalPages, setPage, categories }}>{children}</MainContext.Provider>
+    <MainContext.Provider value={{ products, loading, currentPage, totalPages, setPage, categories, favoriteProducts }}>
+      {children}
+    </MainContext.Provider>
   );
 };
 

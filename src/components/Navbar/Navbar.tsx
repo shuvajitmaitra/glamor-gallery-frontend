@@ -1,8 +1,8 @@
-import { Menu, Search, ShoppingCart } from "lucide-react";
+import { Menu, Search, Heart } from "lucide-react";
 import { useMainContext } from "../../context/MainContext";
 
 export default function Navbar() {
-  const { categories } = useMainContext();
+  const { categories, favoriteProducts } = useMainContext();
   return (
     <div className="sticky top-0 z-10 bg-gray-100">
       {/* Desktop Header */}
@@ -17,10 +17,12 @@ export default function Navbar() {
         </div>
         <div className="flex items-center space-x-2">
           <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
-            <ShoppingCart className="w-6 h-6" />
-            <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
-              {10}
-            </span>
+            <Heart className="w-6 h-6" />
+            {favoriteProducts.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
+                {favoriteProducts.length}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -36,10 +38,12 @@ export default function Navbar() {
               <Search className="w-6 h-6" />
             </button>
             <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
-              <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
-                {10}
-              </span>
+              <Heart className="w-6 h-6" />
+              {favoriteProducts?.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
+                  {favoriteProducts.length}
+                </span>
+              )}
             </button>
           </div>
         </div>
