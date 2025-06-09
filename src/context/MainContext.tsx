@@ -4,25 +4,48 @@ import { productService } from "../services/api";
 interface MainContextType {
   products: any[];
   loading: boolean;
-  loadProducts: () => void;
+  currentPage: number;
+  totalPages: number;
+  setPage: (page: number) => void;
+  categories: string[];
 }
 
 const MainContext = createContext<MainContextType | undefined>(undefined);
 
 export const MainProvider = ({ children }: { children: ReactNode }) => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const loadProducts = async () => {
-    const data = await productService.getAllProducts();
-    console.log("data", JSON.stringify(data.products.length, null, 2));
-    setProducts(data.products);
-  };
-  // useEffect(() => {
-  //   loadProducts();
-  //   return () => {};
-  // }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const categories = ["Men", "Women", "Children", "Accessories", "Beauty", "Winter"];
 
-  return <MainContext.Provider value={{ products, loading, loadProducts }}>{children}</MainContext.Provider>;
+  useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await productService.getAllProducts(currentPage);
+        const total = [...products, ...data.products];
+        setProducts(total);
+        setTotalPages(data.totalPages || Math.ceil(data.totalCount / 8));
+      } catch (error) {
+        console.error("Failed to load products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+    return () => {};
+  }, [currentPage]);
+
+  const setPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  return (
+    <MainContext.Provider value={{ products, loading, currentPage, totalPages, setPage, categories }}>{children}</MainContext.Provider>
+  );
 };
 
 export const useMainContext = () => {

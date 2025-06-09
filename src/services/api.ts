@@ -1,5 +1,3 @@
-//services/api.ts
-
 import axios from "axios";
 
 const BASE_URL = "https://glamor-gallery-backend.vercel.app/api"; // Replace with actual base URL
@@ -16,9 +14,11 @@ const api = axios.create({
 
 // Product Services
 export const productService = {
-  getAllProducts: async () => {
+  getAllProducts: async (page: number = 1, limit: number = 8) => {
     try {
-      const response = await api.get("/product/products");
+      const response = await api.get("/product/products", {
+        params: { page, limit },
+      });
       return response.data;
     } catch (error) {
       throw error;

@@ -1,60 +1,54 @@
-import React, { useContext, useState } from "react";
-import { useMainContext } from "../../context/MainContext";
 import { Menu, Search, ShoppingCart } from "lucide-react";
+import { useMainContext } from "../../context/MainContext";
 
 export default function Navbar() {
-  const { setIsFilterDrawerOpen, setShowMobileSearch, setIsCartDrawerOpen, cartItems, categories, handleSearchProducts } = useMainContext();
+  const { categories } = useMainContext();
   return (
-    <div>
-      {/* desktop header */}
-      <div className="hidden md:flex  items-center justify-between py-2 mb-4 px-10">
-        <img src={"/src/assets/glamor-gallery.png"} alt="" className="w-12" />
+    <div className="sticky top-0 z-10 bg-gray-100">
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center justify-between py-2 mb-4 px-4 sm:px-10">
+        <img src="/src/assets/glamor-gallery.png" alt="Glamor Gallery" className="w-12" />
         <div className="flex items-center space-x-2">
           {categories.map((category) => (
-            <button key={category} onClick={() => setIsFilterDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm">
+            <button key={category} onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition">
               {category}
             </button>
           ))}
         </div>
         <div className="flex items-center space-x-2">
-          <input
-            onChange={(e) => handleSearchProducts(e.target.value)}
-            type="text"
-            placeholder="Search products..."
-            className="p-2 rounded-lg bg-white shadow-sm w-64"
-          />
-
-          <button onClick={() => setIsCartDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm relative">
+          <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
             <ShoppingCart className="w-6 h-6" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-white text-primary-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-primary-500">
-                {cartItems.length}
-              </span>
-            )}
+            <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
+              {10}
+            </span>
           </button>
         </div>
       </div>
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between py-2 mb-4">
-        <button onClick={() => setIsFilterDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm">
-          <Menu className="w-6 h-6" />
-        </button>
-
-        <img src={"/src/assets/glamor-gallery.png"} alt="" className="w-12" />
-
-        <div className="flex items-center space-x-2">
-          <button onClick={() => setShowMobileSearch(true)} className="p-2 rounded-lg bg-white shadow-sm">
-            <Search className="w-6 h-6" />
-          </button>
-
-          <button onClick={() => setIsCartDrawerOpen(true)} className="p-2 rounded-lg bg-white shadow-sm relative">
-            <ShoppingCart className="w-6 h-6" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-white text-primary-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-primary-500">
-                {cartItems.length}
+      <div className="md:hidden flex-col items-center justify-between my-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <img src="/src/assets/logo2.png" alt="Glamor Gallery" className="w-12" />
+            <p className="font-bold text-gray-800">Glamor Gallery</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition">
+              <Search className="w-6 h-6" />
+            </button>
+            <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
+              <ShoppingCart className="w-6 h-6" />
+              <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
+                {10}
               </span>
-            )}
-          </button>
+            </button>
+          </div>
+        </div>
+        <div className="flex items-center overflow-x-auto gap-2">
+          {categories.map((category) => (
+            <button key={category} onClick={() => {}} className="rounded py-1 px-2 bg-white shadow-sm hover:bg-gray-50 transition">
+              <p className="text-xs text-gray-800">{category}</p>
+            </button>
+          ))}
         </div>
       </div>
     </div>
