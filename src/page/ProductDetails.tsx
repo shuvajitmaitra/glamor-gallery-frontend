@@ -58,12 +58,12 @@ const ProductDetails: React.FC = () => {
       .then(() => {
         setCopySuccess("Message copied! Paste it into Messenger.");
         setTimeout(() => setCopySuccess(""), 3000);
-        window.open("https://m.me/iamshuvajit", "_blank", "noopener,noreferrer");
+        window.open("https://m.me/481950948332658", "_blank", "noopener,noreferrer");
       })
       .catch(() => {
         setCopySuccess("Failed to copy message.");
         setTimeout(() => setCopySuccess(""), 3000);
-        window.open("https://m.me/iamshuvajit", "_blank", "noopener,noreferrer");
+        window.open("https://m.me/481950948332658", "_blank", "noopener,noreferrer");
       });
   };
 
@@ -92,7 +92,7 @@ const ProductDetails: React.FC = () => {
   }
 
   // WhatsApp link with specific phone number
-  const whatsappLink = `https://wa.me/+8801982443299?text=${encodeURIComponent(
+  const whatsappLink = `https://wa.me/+8801518946406?text=${encodeURIComponent(
     `Product Name: ${product.productName} \n 
     Product Code: ${product.productCode}
     Price: ৳${product.sellingPrice.toFixed(2)}\n

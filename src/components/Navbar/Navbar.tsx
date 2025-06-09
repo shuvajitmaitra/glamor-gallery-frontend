@@ -1,5 +1,6 @@
 import { Menu, Search, Heart } from "lucide-react";
 import { useMainContext } from "../../context/MainContext";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const { categories, favoriteProducts } = useMainContext();
@@ -16,18 +17,20 @@ export default function Navbar() {
           ))}
         </div>
         <div className="flex items-center space-x-2">
-          <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
-            <Heart className="w-6 h-6" />
-            {favoriteProducts.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
-                {favoriteProducts.length}
-              </span>
-            )}
-          </button>
+          <Link to={"/favorite"}>
+            <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
+              <Heart className="w-6 h-6" />
+              {favoriteProducts.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
+                  {favoriteProducts.length}
+                </span>
+              )}
+            </button>
+          </Link>
         </div>
       </div>
       {/* Mobile Header */}
-      <div className="md:hidden flex-col items-center justify-between my-2">
+      <div className="md:hidden flex-col items-center justify-between mb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <img src="/src/assets/logo2.png" alt="Glamor Gallery" className="w-12" />
@@ -37,14 +40,16 @@ export default function Navbar() {
             <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition">
               <Search className="w-6 h-6" />
             </button>
-            <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
-              <Heart className="w-6 h-6" />
-              {favoriteProducts?.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
-                  {favoriteProducts.length}
-                </span>
-              )}
-            </button>
+            <Link to={"/favorite"}>
+              <button onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition relative">
+                <Heart className="w-6 h-6" />
+                {favoriteProducts?.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-white text-blue-500 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold border border-blue-500">
+                    {favoriteProducts.length}
+                  </span>
+                )}
+              </button>
+            </Link>
           </div>
         </div>
         <div className="flex items-center overflow-x-auto gap-2">

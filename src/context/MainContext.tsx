@@ -9,6 +9,8 @@ interface MainContextType {
   setPage: (page: number) => void;
   categories: string[];
   favoriteProducts: any[];
+  addToFavorite: (p: any) => void;
+  removeFromFavorite: (p: any) => void;
 }
 
 const MainContext = createContext<MainContextType | undefined>(undefined);
@@ -23,14 +25,27 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
   const categories = ["Men", "Women", "Children", "Accessories", "Beauty", "Winter"];
 
   const loadFavoriteProducts = () => {
-    const savedCart = localStorage.getItem("cart");
+    const savedCart = localStorage.getItem("favorite");
 
     let j = null;
     if (savedCart) {
       j = JSON.parse(savedCart);
     }
+    console.log("j", JSON.stringify(j, null, 2));
     j !== null && setFavoriteProducts(j);
   };
+  const addToFavorite = (p: any) => {
+    const total = [...favoriteProducts, p];
+    localStorage.setItem("favorite", JSON.stringify(total));
+    loadFavoriteProducts();
+  };
+  const removeFromFavorite = (p: any) => {
+    const total = favoriteProducts.filter((i) => i._id !== p?._id);
+    localStorage.setItem("favorite", JSON.stringify(total));
+    loadFavoriteProducts();
+    localStorage.removeItem("favorite");
+  };
+
   useEffect(() => {
     loadFavoriteProducts();
   }, []);
@@ -60,7 +75,9 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MainContext.Provider value={{ products, loading, currentPage, totalPages, setPage, categories, favoriteProducts }}>
+    <MainContext.Provider
+      value={{ products, loading, currentPage, totalPages, setPage, categories, favoriteProducts, addToFavorite, removeFromFavorite }}
+    >
       {children}
     </MainContext.Provider>
   );
