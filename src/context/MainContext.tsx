@@ -4,6 +4,7 @@ import { productService } from "../services/api";
 interface MainContextType {
   products: any[];
   loading: boolean;
+  loadProducts: () => void;
 }
 
 const MainContext = createContext<MainContextType | undefined>(undefined);
@@ -11,19 +12,17 @@ const MainContext = createContext<MainContextType | undefined>(undefined);
 export const MainProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  useEffect(() => {
-    const loadProducts = async () => {
-      setLoading(true);
-      const data = await productService.getAllProducts();
-      console.log("data", JSON.stringify(data.products.length, null, 2));
-      setProducts(data.products);
-      setLoading(false);
-    };
-    loadProducts();
-    return () => {};
-  }, []);
+  const loadProducts = async () => {
+    const data = await productService.getAllProducts();
+    console.log("data", JSON.stringify(data.products.length, null, 2));
+    setProducts(data.products);
+  };
+  // useEffect(() => {
+  //   loadProducts();
+  //   return () => {};
+  // }, []);
 
-  return <MainContext.Provider value={{ products, loading }}>{children}</MainContext.Provider>;
+  return <MainContext.Provider value={{ products, loading, loadProducts }}>{children}</MainContext.Provider>;
 };
 
 export const useMainContext = () => {

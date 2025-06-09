@@ -4,6 +4,7 @@ import { productService } from "../services/api";
 
 interface Product {
   _id: string;
+  productCode: string;
   available: boolean;
   availableSize: string[];
   productName: string;
@@ -21,6 +22,8 @@ const ProductDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [copySuccess, setCopySuccess] = useState<string>("");
+
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
@@ -32,14 +35,37 @@ const ProductDetails: React.FC = () => {
           setSelectedImage(fetchedProduct.product.productImage[0] || "https://via.placeholder.com/150");
           setLoading(false);
         }
-      } catch (err) {
-        setError("Failed to fetch product details");
+      } catch (err: any) {
+        setError(
+          err.message === "Network Error"
+            ? "Unable to connect to the server. Please check your internet or try again later."
+            : "Failed to fetch product details"
+        );
         setLoading(false);
       }
     };
 
     fetchProductDetails();
   }, [id]);
+
+  const handleMessengerClick = () => {
+    if (!product) return;
+    const message = `I'm interested in ${product.productName} (Price: ৳${product.sellingPrice.toFixed(
+      2
+    )}, Sizes: ${product.availableSize.join(", ")})`;
+    navigator.clipboard
+      .writeText(message)
+      .then(() => {
+        setCopySuccess("Message copied! Paste it into Messenger.");
+        setTimeout(() => setCopySuccess(""), 3000);
+        window.open("https://m.me/iamshuvajit", "_blank", "noopener,noreferrer");
+      })
+      .catch(() => {
+        setCopySuccess("Failed to copy message.");
+        setTimeout(() => setCopySuccess(""), 3000);
+        window.open("https://m.me/iamshuvajit", "_blank", "noopener,noreferrer");
+      });
+  };
 
   if (loading) {
     return (
@@ -65,12 +91,12 @@ const ProductDetails: React.FC = () => {
     );
   }
 
-  // WhatsApp and Messenger links with Taka currency
-  const whatsappLink = `https://wa.me/?text=${encodeURIComponent(
-    `I'm interested in ${product.productName} (Price: ৳${product.sellingPrice.toFixed(2)}, Sizes: ${product.availableSize.join(", ")})`
-  )}`;
-  const messengerLink = `https://m.me/?text=${encodeURIComponent(
-    `I'm interested in ${product.productName} (Price: ৳${product.sellingPrice.toFixed(2)}, Sizes: ${product.availableSize.join(", ")})`
+  // WhatsApp link with specific phone number
+  const whatsappLink = `https://wa.me/+8801982443299?text=${encodeURIComponent(
+    `Product Name: ${product.productName} \n 
+    Product Code: ${product.productCode}
+    Price: ৳${product.sellingPrice.toFixed(2)}\n
+     Sizes: ${product.availableSize.join(", ")}`
   )}`;
 
   return (
@@ -78,8 +104,8 @@ const ProductDetails: React.FC = () => {
       <div className="w-full max-w-4xl">
         <div className="bg-white rounded-lg shadow-md overflow-hidden p-2">
           {/* Primary Image */}
-          <div className="  items-center ">
-            <img src={selectedImage} alt={product.productName} className="w-96 h-9w-96 object-cover rounded" />
+          <div className="w-full">
+            <img src={selectedImage} alt={product.productName} className="w-96 h-96 object-cover rounded-md" />
           </div>
 
           {/* Horizontal Scrollable Images */}
@@ -104,9 +130,10 @@ const ProductDetails: React.FC = () => {
 
           {/* Product Details */}
           <div className="mt-4">
-            <p className="text-sm xs:text-base sm:text-lg text-gray-600 mb-4">{product.description}</p>
+            <p className="text-sm xs:text-base sm:text-lg text-gray-600 mb-4 whitespace-pre-line">{product.description}</p>
             <p className="text-base xs:text-lg font-semibold text-gray-800 mb-2">Price: ৳{product.sellingPrice.toFixed(2)}</p>
             <p className="text-sm xs:text-base text-gray-600 mb-2">Category: {product.category}</p>
+            <p className="text-sm xs:text-base text-gray-600 mb-2">Code: {product.productCode}</p>
             <p className="text-sm xs:text-base text-gray-600 mb-2">Available Sizes: {product.availableSize.join(", ")}</p>
             <p className="text-sm xs:text-base text-gray-600 mb-4">Stock: {product.stock}</p>
             <div className="flex flex-col xs:flex-row gap-2 sm:gap-4">
@@ -118,14 +145,15 @@ const ProductDetails: React.FC = () => {
               >
                 Order via WhatsApp
               </a>
-              <a
-                href={messengerLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition text-sm xs:text-base text-center"
-              >
-                Order via Messenger
-              </a>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleMessengerClick}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition text-sm xs:text-base text-center"
+                >
+                  Order via Messenger
+                </button>
+                {copySuccess && <p className="text-xs xs:text-sm text-green-600">{copySuccess}</p>}
+              </div>
             </div>
           </div>
         </div>
