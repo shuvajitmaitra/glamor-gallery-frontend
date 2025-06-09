@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMainContext } from "../context/MainContext";
 import Navbar from "../components/Navbar/Navbar";
+import { Heart } from "lucide-react";
 
 export default function HomePage() {
   const { products, loading, currentPage, totalPages, setPage } = useMainContext();
@@ -28,7 +29,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {products.map((product) => (
             <Link key={product._id} to={`/products/${product._id}`}>
-              <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-52 xl:h-[430px]">
+              <div className="bg-white relative rounded-lg shadow-md overflow-hidden flex flex-col h-52 xl:h-[430px]">
                 <img
                   src={product.productImage[0]}
                   alt={product.productName}
@@ -41,6 +42,12 @@ export default function HomePage() {
                     <p className="text-blue-400 mt-1 text-xs xs:text-sm sm:text-base font-bold">৳{product.sellingPrice}</p>
                   </div>
                 </div>
+                <button
+                  onClick={() => {}}
+                  className=" absolute bottom-2 right-2 p-2 shadow rounded-lg bg-red-50  hover:bg-gray-50 transition"
+                >
+                  <Heart className="w-6 h-6" />
+                </button>
               </div>
             </Link>
           ))}
