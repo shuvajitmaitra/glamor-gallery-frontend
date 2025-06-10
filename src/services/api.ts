@@ -16,7 +16,7 @@ const api = axios.create({
 export const productService = {
   getAllProducts: async (page: number = 1, limit: number = 8) => {
     try {
-      const response = await api.get("/product/products", {
+      const response = await api.get("/product/v2/products", {
         params: { page, limit },
       });
       return response.data;

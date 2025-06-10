@@ -40,7 +40,10 @@ export default function HomePage() {
                   <div className="p-2 sm:p-3 flex-1 flex flex-col justify-between">
                     <div>
                       <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-gray-800 line-clamp-2">{product.productName}</h3>
-                      <p className="text-blue-400 mt-1 text-xs xs:text-sm sm:text-base font-bold">৳{product.sellingPrice}</p>
+                      <div className="flex items-center gap-1">
+                        <p className="text-gray-400 mt-1 text-xs xs:text-sm sm:text-base line-through">৳{product.askingPrice}</p>
+                        <p className="text-blue-400 mt-1 text-xs xs:text-sm sm:text-base font-bold">৳{product.sellingPrice}</p>
+                      </div>
                     </div>
                   </div>
                 </div>

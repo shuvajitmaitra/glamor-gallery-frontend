@@ -8,7 +8,7 @@ export default function Navbar() {
     <div className="sticky top-0 z-10 bg-gray-100">
       {/* Desktop Header */}
       <div className="hidden md:flex items-center justify-between py-2 mb-4 px-4 sm:px-10">
-        <img src="/src/assets/glamor-gallery.png" alt="Glamor Gallery" className="w-12" />
+        <img src="/logo2.png" alt="Glamor Gallery" className="w-12" />
         <div className="flex items-center space-x-2">
           {categories.map((category) => (
             <button key={category} onClick={() => {}} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition">
@@ -33,7 +33,7 @@ export default function Navbar() {
       <div className="md:hidden flex-col items-center justify-between mb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <img src="/src/assets/logo2.png" alt="Glamor Gallery" className="w-12" />
+            <img src="/logo2.png" alt="Glamor Gallery" className="w-12" />
             <p className="font-bold text-gray-800">Glamor Gallery</p>
           </div>
           <div className="flex items-center space-x-2">

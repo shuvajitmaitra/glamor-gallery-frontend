@@ -23,6 +23,7 @@ const ProductDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
 
   const { id } = useParams<{ id: string }>();
 
@@ -33,6 +34,7 @@ const ProductDetails: React.FC = () => {
           const fetchedProduct = await productService.getProductById(id);
           setProduct(fetchedProduct.product);
           setSelectedImage(fetchedProduct.product.productImage[0] || "https://via.placeholder.com/150");
+          setSelectedSize(fetchedProduct.product.availableSize[0] || ""); // Default to first size
           setLoading(false);
         }
       } catch (err: any) {
@@ -50,9 +52,8 @@ const ProductDetails: React.FC = () => {
 
   const handleMessengerClick = () => {
     if (!product) return;
-    const message = `I'm interested in ${product.productName} (Price: ৳${product.sellingPrice.toFixed(
-      2
-    )}, Sizes: ${product.availableSize.join(", ")})`;
+    const sizeText = selectedSize ? `Size: ${selectedSize}` : "No size selected";
+    const message = `I'm interested in ${product.productName} Price: ৳${product.sellingPrice.toFixed(2)}, ${sizeText}`;
     navigator.clipboard
       .writeText(message)
       .then(() => {
@@ -92,19 +93,17 @@ const ProductDetails: React.FC = () => {
   }
 
   // WhatsApp link with specific phone number
+  const sizeText = selectedSize ? `Size: ${selectedSize}` : "No size selected";
   const whatsappLink = `https://wa.me/+8801518946406?text=${encodeURIComponent(
-    `Product Name: ${product.productName} \n 
-    Product Code: ${product.productCode}
-    Price: ৳${product.sellingPrice.toFixed(2)}\n
-     Sizes: ${product.availableSize.join(", ")}`
+    `Product Name: ${product.productName}\nProduct Code: ${product.productCode}\nPrice: ৳${product.sellingPrice}\n${sizeText}`
   )}`;
 
   return (
-    <div className="flex-1 flex justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-4xl">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden p-2">
+    <div className="flex-1 flex justify-center min-h-screen bg-gray-100 pt-16 sm:pt-20">
+      <div className="w-full max-w-4xl px-2 sm:px-4">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden p-2 sm:p-4">
           {/* Primary Image */}
-          <div className="w-full">
+          <div className="w-full flex justify-center">
             <img src={selectedImage} alt={product.productName} className="w-96 h-96 object-cover rounded-md" />
           </div>
 
@@ -133,8 +132,27 @@ const ProductDetails: React.FC = () => {
             <p className="text-sm xs:text-base sm:text-lg text-gray-600 mb-4 whitespace-pre-line">{product.description}</p>
             <p className="text-base xs:text-lg font-semibold text-gray-800 mb-2">Price: ৳{product.sellingPrice.toFixed(2)}</p>
             <p className="text-sm xs:text-base text-gray-600 mb-2">Category: {product.category}</p>
-            <p className="text-sm xs:text-base text-gray-600 mb-2">Code: {product.productCode}</p>
-            <p className="text-sm xs:text-base text-gray-600 mb-2">Available Sizes: {product.availableSize.join(", ")}</p>
+            <p className="text-sm xs:text-base text-gray-600 mb-2">Code: ${product.productCode}</p>
+            <div className="mb-4">
+              <label className="text-sm xs:text-base text-gray-600 mb-1 block">Select Size:</label>
+              <div className="flex overflow-x-auto gap-2">
+                {product.availableSize.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-3 py-1 rounded-md border text-sm xs:text-base ${
+                      selectedSize === size
+                        ? "border-2 border-blue-500 bg-blue-50 text-blue-700"
+                        : "border border-gray-300 bg-white text-gray-700"
+                    } hover:bg-blue-100 transition`}
+                    aria-selected={selectedSize === size}
+                    aria-label={`Select size ${size}`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-sm xs:text-base text-gray-600 mb-4">Stock: {product.stock}</p>
             <div className="flex flex-col xs:flex-row gap-2 sm:gap-4">
               <a
