@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useMainContext } from "../context/MainContext";
@@ -8,6 +8,7 @@ export default function HomePage() {
   const { products, loading, currentPage, totalPages, setPage, favoriteProducts, addToFavorite, removeFromFavorite } = useMainContext();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -17,8 +18,25 @@ export default function HomePage() {
     });
   }, [products, selectedCategory, searchQuery]);
 
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && currentPage < totalPages) {
+          setPage(currentPage + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loading, currentPage, totalPages, setPage]);
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-950">
       <Navbar
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
@@ -29,7 +47,7 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         {loading && products.length === 0 ? (
           <div className="flex justify-center items-center h-64">
-            <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-800 rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-gray-700 border-t-gray-300 rounded-full animate-spin" />
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col justify-center items-center h-64 gap-3">
@@ -37,7 +55,7 @@ export default function HomePage() {
             {(selectedCategory !== "All" || searchQuery) && (
               <button
                 onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
-                className="text-sm text-gray-900 underline underline-offset-2"
+                className="text-sm text-gray-300 underline underline-offset-2"
               >
                 Clear filters
               </button>
@@ -51,8 +69,8 @@ export default function HomePage() {
                 return (
                   <div key={product._id} className="group relative">
                     <Link to={`/products/${product._id}`}>
-                      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
-                        <div className="aspect-square bg-gray-50 overflow-hidden">
+                      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-black/30 transition-shadow duration-200">
+                        <div className="aspect-square bg-gray-800 overflow-hidden">
                           <img
                             src={product.productImage[0]}
                             alt={product.productName}
@@ -61,12 +79,12 @@ export default function HomePage() {
                           />
                         </div>
                         <div className="p-3">
-                          <h3 className="text-sm font-medium text-gray-900 line-clamp-1">{product.productName}</h3>
+                          <h3 className="text-sm font-medium text-gray-100 line-clamp-1">{product.productName}</h3>
                           <div className="flex items-center gap-2 mt-1">
                             {product.maxSellingPrice > product.b2cPrice && (
-                              <span className="text-xs text-gray-400 line-through">৳{product.maxSellingPrice}</span>
+                              <span className="text-xs text-gray-500 line-through">৳{product.maxSellingPrice}</span>
                             )}
-                            <span className="text-sm font-semibold text-gray-900">৳{product.b2cPrice}</span>
+                            <span className="text-sm font-semibold text-white">৳{product.b2cPrice}</span>
                           </div>
                         </div>
                       </div>
@@ -74,7 +92,7 @@ export default function HomePage() {
 
                     <button
                       onClick={() => isFavorite ? removeFromFavorite(product) : addToFavorite(product)}
-                      className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm border border-gray-100 hover:scale-110 transition-transform"
+                      className="absolute top-2 right-2 p-1.5 bg-gray-900 rounded-full shadow-sm border border-gray-700 hover:scale-110 transition-transform"
                       aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                     >
                       <Heart className={`w-4 h-4 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
@@ -84,24 +102,11 @@ export default function HomePage() {
               })}
             </div>
 
-            {currentPage < totalPages && (
-              <div className="flex justify-center mt-10">
-                <button
-                  onClick={() => setPage(currentPage + 1)}
-                  disabled={loading}
-                  className="px-8 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                      Loading…
-                    </span>
-                  ) : (
-                    "Load more"
-                  )}
-                </button>
-              </div>
-            )}
+            <div ref={sentinelRef} className="h-16 flex items-center justify-center mt-2">
+              {loading && products.length > 0 && (
+                <div className="w-5 h-5 border-2 border-gray-700 border-t-gray-300 rounded-full animate-spin" />
+              )}
+            </div>
           </>
         )}
       </main>
