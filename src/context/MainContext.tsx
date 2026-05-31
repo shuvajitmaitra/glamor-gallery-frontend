@@ -17,46 +17,38 @@ const MainContext = createContext<MainContextType | undefined>(undefined);
 
 export const MainProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<any[]>([]);
-  const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
-
+  const [favoriteProducts, setFavoriteProducts] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem("favorite");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
   const categories = ["Men", "Women", "Children", "Accessories", "Beauty", "Winter"];
 
-  const loadFavoriteProducts = () => {
-    const savedCart = localStorage.getItem("favorite");
-
-    let j = null;
-    if (savedCart) {
-      j = JSON.parse(savedCart);
-    }
-    console.log("j", JSON.stringify(j, null, 2));
-    j !== null && setFavoriteProducts(j);
-  };
   const addToFavorite = (p: any) => {
-    const total = [...favoriteProducts, p];
-    localStorage.setItem("favorite", JSON.stringify(total));
-    loadFavoriteProducts();
-  };
-  const removeFromFavorite = (p: any) => {
-    const total = favoriteProducts.filter((i) => i._id !== p?._id);
-    localStorage.setItem("favorite", JSON.stringify(total));
-    loadFavoriteProducts();
-    localStorage.removeItem("favorite");
+    const updated = [...favoriteProducts, p];
+    localStorage.setItem("favorite", JSON.stringify(updated));
+    setFavoriteProducts(updated);
   };
 
-  useEffect(() => {
-    loadFavoriteProducts();
-  }, []);
+  const removeFromFavorite = (p: any) => {
+    const updated = favoriteProducts.filter((i) => i._id !== p?._id);
+    localStorage.setItem("favorite", JSON.stringify(updated));
+    setFavoriteProducts(updated);
+  };
 
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       try {
         const data = await productService.getAllProducts(currentPage);
-        const total = [...products, ...data.products];
-        setProducts(total);
+        setProducts((prev) => [...prev, ...data.products]);
         setTotalPages(data.totalPages || Math.ceil(data.totalCount / 8));
       } catch (error) {
         console.error("Failed to load products:", error);
@@ -65,7 +57,6 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     loadProducts();
-    return () => {};
   }, [currentPage]);
 
   const setPage = (page: number) => {
@@ -86,7 +77,7 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
 export const useMainContext = () => {
   const context = useContext(MainContext);
   if (!context) {
-    throw new Error("useMainContext must be used within a MainContextProvider");
+    throw new Error("useMainContext must be used within a MainProvider");
   }
   return context;
 };

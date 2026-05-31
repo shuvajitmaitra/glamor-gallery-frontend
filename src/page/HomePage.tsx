@@ -1,87 +1,110 @@
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 import { useMainContext } from "../context/MainContext";
 import Navbar from "../components/Navbar/Navbar";
-import { Heart } from "lucide-react";
 
 export default function HomePage() {
   const { products, loading, currentPage, totalPages, setPage, favoriteProducts, addToFavorite, removeFromFavorite } = useMainContext();
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  if (loading && products.length === 0) {
-    return (
-      <div className="flex-1 flex justify-center items-center min-h-screen bg-gray-100">
-        <p className="text-lg sm:text-xl text-gray-600">Loading products...</p>
-      </div>
-    );
-  }
-
-  if (!products || products.length === 0) {
-    return (
-      <div className="flex-1 flex justify-center items-center min-h-screen bg-gray-100">
-        <p className="text-lg sm:text-xl text-gray-600">No products available.</p>
-      </div>
-    );
-  }
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
+      const matchesSearch = !searchQuery || p.productName.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [products, selectedCategory, searchQuery]);
 
   return (
-    <div className="flex-1 flex justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-7xl px-2 sm:px-4 relative">
-        <Navbar />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-          {products.map((product) => (
-            <div key={product._id} className="relative">
-              <Link to={`/products/${product._id}`}>
-                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-52 xl:h-[430px]">
-                  <img
-                    src={product.productImage[0]}
-                    alt={product.productName}
-                    className="w-full h-32 xs:h-36 sm:h-40 md:h-48 object-contain"
-                    loading="lazy"
-                  />
-                  <div className="p-2 sm:p-3 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-gray-800 line-clamp-2">{product.productName}</h3>
-                      <div className="flex items-center gap-1">
-                        <p className="text-gray-400 mt-1 text-xs xs:text-sm sm:text-base line-through">৳{product.askingPrice}</p>
-                        <p className="text-blue-400 mt-1 text-xs xs:text-sm sm:text-base font-bold">৳{product.sellingPrice}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-              <button
-                onClick={() => {
-                  if (favoriteProducts.find((i) => i?._id === product?._id)) {
-                    removeFromFavorite(product);
-                  } else {
-                    addToFavorite(product);
-                  }
-                }}
-                className={`absolute bottom-2 right-2 p-2 shadow rounded-lg ${
-                  favoriteProducts.find((i) => i?._id === product?._id) ? "bg-red-300" : "bg-red-50"
-                } hover:bg-red-100 transition`}
-              >
-                <Heart className="w-6 h-6" />
-              </button>
-            </div>
-          ))}
-        </div>
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center mt-6 space-x-2 mb-3">
-            <span className="text-gray-600">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => {
-                setPage(currentPage + 1);
-              }}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 bg-gray-200 text-gray-600 rounded disabled:opacity-50 hover:bg-gray-300 transition"
-            >
-              Next
-            </button>
+    <div className="min-h-screen bg-white">
+      <Navbar
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {loading && products.length === 0 ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-800 rounded-full animate-spin" />
           </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="flex flex-col justify-center items-center h-64 gap-3">
+            <p className="text-gray-500 text-sm">No products found</p>
+            {(selectedCategory !== "All" || searchQuery) && (
+              <button
+                onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
+                className="text-sm text-gray-900 underline underline-offset-2"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {filteredProducts.map((product) => {
+                const isFavorite = favoriteProducts.some((i) => i._id === product._id);
+                return (
+                  <div key={product._id} className="group relative">
+                    <Link to={`/products/${product._id}`}>
+                      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
+                        <div className="aspect-square bg-gray-50 overflow-hidden">
+                          <img
+                            src={product.productImage[0]}
+                            alt={product.productName}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="text-sm font-medium text-gray-900 line-clamp-1">{product.productName}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            {product.maxSellingPrice > product.b2cPrice && (
+                              <span className="text-xs text-gray-400 line-through">৳{product.maxSellingPrice}</span>
+                            )}
+                            <span className="text-sm font-semibold text-gray-900">৳{product.b2cPrice}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+
+                    <button
+                      onClick={() => isFavorite ? removeFromFavorite(product) : addToFavorite(product)}
+                      className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm border border-gray-100 hover:scale-110 transition-transform"
+                      aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <Heart className={`w-4 h-4 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {currentPage < totalPages && (
+              <div className="flex justify-center mt-10">
+                <button
+                  onClick={() => setPage(currentPage + 1)}
+                  disabled={loading}
+                  className="px-8 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                      Loading…
+                    </span>
+                  ) : (
+                    "Load more"
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
-      </div>
+      </main>
     </div>
   );
 }
