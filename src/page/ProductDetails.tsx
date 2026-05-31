@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Package, Tag, Hash, CheckCircle, XCircle, Heart } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { productService } from "../services/api";
 import { useMainContext } from "../context/MainContext";
 
@@ -25,32 +26,31 @@ export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const { favoriteProducts, addToFavorite, removeFromFavorite } = useMainContext();
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [copySuccess, setCopySuccess] = useState("");
 
+  const { data, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ["product", id],
+    queryFn: () => productService.getProductById(id!),
+    enabled: !!id,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const product: Product | null = data?.product ?? null;
+
+  const error = queryError
+    ? (queryError as any).message === "Network Error"
+      ? "Unable to connect. Please check your internet connection."
+      : "Failed to load product details."
+    : null;
+
   useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    productService
-      .getProductById(id)
-      .then((data) => {
-        setProduct(data.product);
-        setSelectedImage(data.product.productImage[0] || "");
-        setSelectedSize(data.product.availableSize[0] || "");
-      })
-      .catch((err) => {
-        setError(
-          err.message === "Network Error"
-            ? "Unable to connect. Please check your internet connection."
-            : "Failed to load product details."
-        );
-      })
-      .finally(() => setLoading(false));
-  }, [id]);
+    if (product) {
+      setSelectedImage(product.productImage[0] || "");
+      setSelectedSize(product.availableSize[0] || "");
+    }
+  }, [product]);
 
   if (loading) {
     return (

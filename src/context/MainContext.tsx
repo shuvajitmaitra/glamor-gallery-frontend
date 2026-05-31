@@ -1,4 +1,5 @@
-import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { createContext, useContext, ReactNode, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { productService } from "../services/api";
 
 interface MainContextType {
@@ -16,7 +17,6 @@ interface MainContextType {
 const MainContext = createContext<MainContextType | undefined>(undefined);
 
 export const MainProvider = ({ children }: { children: ReactNode }) => {
-  const [products, setProducts] = useState<any[]>([]);
   const [favoriteProducts, setFavoriteProducts] = useState<any[]>(() => {
     try {
       const saved = localStorage.getItem("favorite");
@@ -25,11 +25,32 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
       return [];
     }
   });
-  const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   const categories = ["Men", "Women", "Children", "Accessories", "Beauty", "Winter"];
+
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useInfiniteQuery({
+    queryKey: ["products"],
+    queryFn: ({ pageParam }) => productService.getAllProducts(pageParam as number),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = lastPage.totalPages || Math.ceil(lastPage.totalCount / 8);
+      const nextPage = allPages.length + 1;
+      return nextPage <= totalPages ? nextPage : undefined;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const products = data?.pages.flatMap((p) => p.products) ?? [];
+  const currentPage = data?.pages.length ?? 0;
+  const lastPage = data?.pages[data.pages.length - 1];
+  const totalPages = lastPage ? (lastPage.totalPages || Math.ceil(lastPage.totalCount / 8)) : 1;
+  const loading = isLoading || isFetchingNextPage;
+
+  const setPage = (page: number) => {
+    if (page > currentPage && hasNextPage) {
+      fetchNextPage();
+    }
+  };
 
   const addToFavorite = (p: any) => {
     const updated = [...favoriteProducts, p];
@@ -41,28 +62,6 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
     const updated = favoriteProducts.filter((i) => i._id !== p?._id);
     localStorage.setItem("favorite", JSON.stringify(updated));
     setFavoriteProducts(updated);
-  };
-
-  useEffect(() => {
-    const loadProducts = async () => {
-      setLoading(true);
-      try {
-        const data = await productService.getAllProducts(currentPage);
-        setProducts((prev) => [...prev, ...data.products]);
-        setTotalPages(data.totalPages || Math.ceil(data.totalCount / 8));
-      } catch (error) {
-        console.error("Failed to load products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadProducts();
-  }, [currentPage]);
-
-  const setPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
   };
 
   return (
