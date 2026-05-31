@@ -116,7 +116,7 @@ export default function ProductDetails() {
       <main className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
           {/* Image gallery */}
-          <div>
+          <div className="min-w-0 w-full">
             <div className="aspect-square bg-gray-900 rounded-2xl overflow-hidden border border-gray-800">
               <img
                 src={selectedImage}
@@ -126,7 +126,7 @@ export default function ProductDetails() {
             </div>
 
             {product.productImage.length > 1 && (
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar">
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-2 no-scrollbar w-full" style={{ WebkitOverflowScrolling: "touch" }}>
                 {product.productImage.map((img, i) => (
                   <button
                     key={i}
