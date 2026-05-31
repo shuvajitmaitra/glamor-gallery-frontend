@@ -80,10 +80,13 @@ export default function ProductDetails() {
   )}`;
 
   const handleMessengerClick = () => {
-    const message = `I'm interested in ${product.productName} — Price: ৳${product.b2cPrice}, ${sizeText}`;
-    navigator.clipboard.writeText(message).catch(() => {});
-    setCopySuccess("Message copied! Paste it into Messenger.");
-    setTimeout(() => setCopySuccess(""), 3000);
+    const message = `Product Name: ${product.productName}\nProduct Code: ${product.productCode}\nPrice: ৳${product.b2cPrice}\n${sizeText}`;
+    navigator.clipboard.writeText(message).then(() => {
+      setCopySuccess("copied");
+    }).catch(() => {
+      setCopySuccess("copied");
+    });
+    setTimeout(() => setCopySuccess(""), 4000);
     window.open("https://m.me/481950948332658", "_blank", "noopener,noreferrer");
   };
 
@@ -235,26 +238,33 @@ export default function ProductDetails() {
             )}
 
             {/* Order CTAs */}
-            <div className="flex flex-col sm:flex-row gap-2 pt-1">
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center py-3 px-4 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 transition-colors"
-              >
-                Order via WhatsApp
-              </a>
-              <button
-                onClick={handleMessengerClick}
-                className="flex-1 flex items-center justify-center py-3 px-4 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
-              >
-                Order via Messenger
-              </button>
+            <div className="flex flex-col gap-2 pt-1">
+              {copySuccess && (
+                <div className="flex items-start gap-2.5 bg-blue-950 border border-blue-700 rounded-xl px-3.5 py-3">
+                  <span className="text-blue-300 text-base leading-none mt-0.5">📋</span>
+                  <div>
+                    <p className="text-sm font-medium text-blue-200">Product info copied!</p>
+                    <p className="text-xs text-blue-400 mt-0.5">Open Messenger and paste (long-press the text field) to send your order.</p>
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center py-3 px-4 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 transition-colors"
+                >
+                  Order via WhatsApp
+                </a>
+                <button
+                  onClick={handleMessengerClick}
+                  className="flex-1 flex items-center justify-center py-3 px-4 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+                >
+                  Order via Messenger
+                </button>
+              </div>
             </div>
-
-            {copySuccess && (
-              <p className="text-xs text-green-400 text-center">{copySuccess}</p>
-            )}
           </div>
         </div>
       </main>
